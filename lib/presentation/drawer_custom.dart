@@ -9,9 +9,11 @@ import 'package:examen_final/providers/language_provider.dart';
 import 'package:examen_final/providers/movimiento_provider.dart';
 import 'package:examen_final/providers/theme_provider.dart';
 
+// Menú lateral con navegación, configuración y cierre de sesión
 class DrawerCustom extends ConsumerWidget {
   const DrawerCustom({super.key});
 
+  // Limpia el estado de movimientos, cierra sesión y redirige al login
   Future<void> _logout(BuildContext context, WidgetRef ref) async {
     ref.read(movimientoProvider.notifier).clear();
     await ref.read(authProvider.notifier).logout();
@@ -33,6 +35,7 @@ class DrawerCustom extends ConsumerWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
+                // Cabecera con avatar y datos del usuario logueado
                 Container(
                   height: 170,
                   decoration: BoxDecoration(
@@ -81,6 +84,7 @@ class DrawerCustom extends ConsumerWidget {
                     ],
                   ),
                 ),
+                // Items de navegación generados desde router_config.dart
                 ...routerConfig.map((route) {
                   return ListTile(
                     iconColor: Theme.of(context).colorScheme.primary,
@@ -89,12 +93,13 @@ class DrawerCustom extends ConsumerWidget {
                     subtitle: Text(route.description),
                     trailing: const Icon(Icons.arrow_forward_ios_outlined),
                     onTap: () {
-                      Navigator.pop(context);
+                      Navigator.pop(context); // Cierra el drawer
                       context.go(route.path);
                     },
                   );
                 }),
                 const Divider(),
+                // Switch de tema claro/oscuro
                 ListTile(
                   iconColor: Theme.of(context).colorScheme.primary,
                   leading: Icon(
@@ -106,6 +111,7 @@ class DrawerCustom extends ConsumerWidget {
                         ref.read(themeprovider.notifier).toggleTheme(),
                   ),
                 ),
+                // Selector de idioma con botón de alternancia
                 ListTile(
                   iconColor: Theme.of(context).colorScheme.primary,
                   leading: const Icon(Icons.language),
@@ -121,6 +127,7 @@ class DrawerCustom extends ConsumerWidget {
             ),
           ),
           const Divider(height: 1),
+          // Botón de cerrar sesión siempre visible al fondo del drawer
           ListTile(
             leading: Icon(
               Icons.logout,

@@ -8,6 +8,7 @@ import 'package:examen_final/providers/language_provider.dart';
 import 'package:examen_final/providers/movimiento_provider.dart';
 import 'package:examen_final/providers/theme_provider.dart';
 
+// Pantalla de inicio de sesión
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -19,16 +20,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _loading = false;
-  bool _obscurePassword = true;
+  bool _loading = false;         // Controla el estado del botón durante la petición
+  bool _obscurePassword = true;  // Controla si la contraseña se muestra o se oculta
 
   @override
   void dispose() {
+    // Libera los controladores al destruir el widget para evitar fugas de memoria
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
+  // Valida el formulario y llama al provider para autenticar al usuario
   void _login(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -45,6 +48,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _loading = false);
 
     if (error == null) {
+      // Login exitoso: carga los movimientos y navega a finanzas
       final user = ref.read(authProvider);
       if (user != null) {
         ref.read(movimientoProvider.notifier).setUserId(user.id!);
@@ -54,6 +58,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
       router.go('/finanzas');
     } else {
+      // Credenciales incorrectas: muestra mensaje de error
       messenger.showSnackBar(
         SnackBar(content: Text(texts.loginError)),
       );
@@ -71,6 +76,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // Sección superior con logo y título de la app
             Expanded(
               flex: 2,
               child: Container(
@@ -109,6 +115,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
             ),
+            // Sección inferior con el formulario de login
             Expanded(
               flex: 3,
               child: SingleChildScrollView(
@@ -118,6 +125,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 8),
+                      // Campo de email con validación de formato
                       TextFormField(
                         controller: _emailController,
                         decoration: InputDecoration(
@@ -137,6 +145,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
+                      // Campo de contraseña con opción de mostrar/ocultar
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
@@ -161,6 +170,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             : null,
                       ),
                       const SizedBox(height: 24),
+                      // Botón de login; muestra spinner mientras procesa
                       SizedBox(
                         width: double.infinity,
                         height: 52,
@@ -183,11 +193,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      // Enlace para ir a la pantalla de registro
                       TextButton(
                         onPressed: () => context.go('/register'),
                         child: Text(texts.createAccount),
                       ),
                       const SizedBox(height: 24),
+                      // Botones de acceso rápido a tema e idioma desde el login
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [

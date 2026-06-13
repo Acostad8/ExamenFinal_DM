@@ -7,6 +7,7 @@ import 'package:examen_final/model/movimiento_model.dart';
 import 'package:examen_final/providers/auth_provider.dart';
 import 'package:examen_final/providers/movimiento_provider.dart';
 
+// Pantalla principal de gestión financiera
 class FinanzasScreen extends ConsumerStatefulWidget {
   const FinanzasScreen({super.key});
 
@@ -17,9 +18,11 @@ class FinanzasScreen extends ConsumerStatefulWidget {
 class _FinanzasScreenState extends ConsumerState<FinanzasScreen> {
   int? _loadedUserId;
 
+  // Carga los movimientos del usuario solo una vez por sesión
   void _ensureLoaded(int userId) {
     if (_loadedUserId == userId) return;
     _loadedUserId = userId;
+    // addPostFrameCallback asegura que la carga ocurra después del primer render
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(movimientoProvider.notifier).setUserId(userId);
@@ -35,6 +38,7 @@ class _FinanzasScreenState extends ConsumerState<FinanzasScreen> {
     final movimientos = ref.watch(movimientoProvider);
     final texts = AppLocalizations.of(context)!;
 
+    // Cálculos de resumen financiero derivados de la lista de movimientos
     final totalIngresos = movimientos
         .where((m) => m.tipo == 'ingreso')
         .fold(0.0, (sum, m) => sum + m.valor);
@@ -47,12 +51,14 @@ class _FinanzasScreenState extends ConsumerState<FinanzasScreen> {
       children: [
         Column(
           children: [
+            // Tarjetas de resumen: ingresos, gastos y balance
             _SummaryCards(
               totalIngresos: totalIngresos,
               totalGastos: totalGastos,
               balance: balance,
               texts: texts,
             ),
+            // Encabezado de la lista de movimientos
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -72,6 +78,7 @@ class _FinanzasScreenState extends ConsumerState<FinanzasScreen> {
               ),
             ),
             Expanded(
+              // Muestra mensaje vacío o la lista según el estado del provider
               child: movimientos.isEmpty
                   ? Center(
                       child: Column(
@@ -111,6 +118,7 @@ class _FinanzasScreenState extends ConsumerState<FinanzasScreen> {
             ),
           ],
         ),
+        // FAB flotante para agregar un nuevo movimiento
         Positioned(
           bottom: 16,
           right: 16,
@@ -127,6 +135,7 @@ class _FinanzasScreenState extends ConsumerState<FinanzasScreen> {
     );
   }
 
+  // Abre el modal de creación o edición; cuando cierra aplica el CRUD correspondiente
   Future<void> _showMovimientoDialog(
     BuildContext context, {
     MovimientoModel? movimiento,
@@ -141,8 +150,10 @@ class _FinanzasScreenState extends ConsumerState<FinanzasScreen> {
     );
     if (result != null && mounted) {
       if (movimiento == null) {
+        // Sin movimiento previo → insertar
         await ref.read(movimientoProvider.notifier).addMovimiento(result);
       } else {
+        // Con movimiento previo → actualizar
         await ref
             .read(movimientoProvider.notifier)
             .updateMovimiento(result);
@@ -150,6 +161,7 @@ class _FinanzasScreenState extends ConsumerState<FinanzasScreen> {
     }
   }
 
+  // Muestra diálogo de confirmación antes de eliminar un movimiento
   Future<void> _showDeleteDialog(BuildContext context, int id) async {
     final texts = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
@@ -178,6 +190,7 @@ class _FinanzasScreenState extends ConsumerState<FinanzasScreen> {
   }
 }
 
+// Widget que agrupa las tres tarjetas de resumen financiero
 class _SummaryCards extends StatelessWidget {
   final double totalIngresos;
   final double totalGastos;
@@ -197,6 +210,7 @@ class _SummaryCards extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          // Fila superior: ingresos y gastos lado a lado
           Row(
             children: [
               Expanded(
@@ -219,6 +233,7 @@ class _SummaryCards extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
+          // Tarjeta de balance a ancho completo; cambia de color si es negativo
           _SummaryCard(
             label: texts.balance,
             value: balance,
@@ -234,6 +249,7 @@ class _SummaryCards extends StatelessWidget {
   }
 }
 
+// Tarjeta individual con ícono, etiqueta y valor monetario
 class _SummaryCard extends StatelessWidget {
   final String label;
   final double value;
@@ -262,6 +278,7 @@ class _SummaryCard extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Ícono circular con fondo semitransparente
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -282,6 +299,7 @@ class _SummaryCard extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
+                // Muestra el valor en rojo si el balance es negativo
                 Text(
                   '\$ ${value.abs().toStringAsFixed(0)}',
                   style: TextStyle(
@@ -299,6 +317,7 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
+// Item de la lista con swipe para editar o eliminar
 class _MovimientoItem extends StatelessWidget {
   final MovimientoModel movimiento;
   final AppLocalizations texts;
@@ -322,6 +341,7 @@ class _MovimientoItem extends StatelessWidget {
 
     return Slidable(
       key: ValueKey(movimiento.id),
+      // Acciones que aparecen al deslizar hacia la izquierda
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
         children: [
@@ -359,6 +379,7 @@ class _MovimientoItem extends StatelessWidget {
         child: ListTile(
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          // Ícono de flecha arriba/abajo según el tipo de movimiento
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -386,6 +407,7 @@ class _MovimientoItem extends StatelessWidget {
               color: Theme.of(context).colorScheme.outline,
             ),
           ),
+          // Valor con signo + o - según si es ingreso o gasto
           trailing: Text(
             '${isIngreso ? '+' : '-'} \$ ${movimiento.valor.toStringAsFixed(0)}',
             style: TextStyle(
@@ -399,6 +421,7 @@ class _MovimientoItem extends StatelessWidget {
     );
   }
 
+  // Convierte la fecha de formato ISO (YYYY-MM-DD) a formato legible (DD/MM/YYYY)
   String _formatDate(String fecha) {
     try {
       final dt = DateTime.parse(fecha);
@@ -411,8 +434,9 @@ class _MovimientoItem extends StatelessWidget {
   }
 }
 
-class   _MovimientoDialog extends StatefulWidget {
-  final MovimientoModel? movimiento;
+// Modal para crear o editar un movimiento financiero
+class _MovimientoDialog extends StatefulWidget {
+  final MovimientoModel? movimiento; // null = modo creación, no null = modo edición
   final int userId;
 
   const _MovimientoDialog({this.movimiento, required this.userId});
@@ -431,6 +455,7 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
   @override
   void initState() {
     super.initState();
+    // Pre-carga los valores existentes si es edición, o valores por defecto si es creación
     _tipo = widget.movimiento?.tipo ?? 'ingreso';
     _descController =
         TextEditingController(text: widget.movimiento?.descripcion ?? '');
@@ -444,6 +469,7 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
         : DateTime.now();
   }
 
+  // Convierte el string de fecha ISO a DateTime; usa la fecha actual si falla
   DateTime _parseFecha(String fecha) {
     try {
       return DateTime.parse(fecha);
@@ -459,6 +485,7 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
     super.dispose();
   }
 
+  // Abre el selector de fecha del sistema
   Future<void> _selectDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -469,11 +496,13 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
     if (picked != null) setState(() => _selectedDate = picked);
   }
 
+  // Fecha en formato legible para mostrar al usuario (DD/MM/YYYY)
   String get _formattedDate =>
       '${_selectedDate.day.toString().padLeft(2, '0')}/'
       '${_selectedDate.month.toString().padLeft(2, '0')}/'
       '${_selectedDate.year}';
 
+  // Fecha en formato ISO para guardar en SQLite (YYYY-MM-DD)
   String get _storedDate =>
       '${_selectedDate.year}-'
       '${_selectedDate.month.toString().padLeft(2, '0')}-'
@@ -492,6 +521,7 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Encabezado con ícono y título dinámico según el modo
             Row(
               children: [
                 Icon(
@@ -513,6 +543,7 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
               key: _formKey,
               child: Column(
                 children: [
+                  // Selector de tipo: ingreso o gasto
                   DropdownButtonFormField<String>(
                     initialValue: _tipo,
                     decoration: InputDecoration(
@@ -550,6 +581,7 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
                     onChanged: (v) => setState(() => _tipo = v!),
                   ),
                   const SizedBox(height: 14),
+                  // Campo de descripción con validación de no vacío
                   TextFormField(
                     controller: _descController,
                     decoration: InputDecoration(
@@ -564,6 +596,7 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
                         : null,
                   ),
                   const SizedBox(height: 14),
+                  // Campo de valor numérico con validación de formato
                   TextFormField(
                     controller: _valorController,
                     keyboardType: const TextInputType.numberWithOptions(
@@ -584,6 +617,7 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
                     },
                   ),
                   const SizedBox(height: 14),
+                  // Selector de fecha; al tocarlo abre el DatePicker del sistema
                   InkWell(
                     onTap: _selectDate,
                     borderRadius: BorderRadius.circular(12),
@@ -604,6 +638,7 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
               ),
             ),
             const SizedBox(height: 20),
+            // OverflowBar: barra de acciones que se adapta al espacio disponible
             OverflowBar(
               alignment: MainAxisAlignment.end,
               spacing: 8,
@@ -612,6 +647,7 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(texts.cancel),
                 ),
+                // Al confirmar, cierra el modal devolviendo el modelo construido
                 FilledButton.icon(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {

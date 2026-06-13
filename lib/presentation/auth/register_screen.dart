@@ -6,6 +6,7 @@ import 'package:examen_final/l10n/app_localizations.dart';
 import 'package:examen_final/providers/auth_provider.dart';
 import 'package:examen_final/providers/movimiento_provider.dart';
 
+// Pantalla de registro de nuevo usuario
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
@@ -18,13 +19,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmController = TextEditingController();
+  final _confirmController = TextEditingController(); // Confirmación de contraseña
   bool _loading = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
 
   @override
   void dispose() {
+    // Libera todos los controladores al destruir el widget
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -32,6 +34,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
+  // Valida el formulario y llama al provider para registrar al usuario
   void _register(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -50,6 +53,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _loading = false);
 
     if (error == null) {
+      // Registro exitoso: carga movimientos del nuevo usuario y navega a finanzas
       final user = ref.read(authProvider);
       if (user != null) {
         ref.read(movimientoProvider.notifier).setUserId(user.id!);
@@ -59,6 +63,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
       router.go('/finanzas');
     } else if (error == 'email_exists') {
+      // El email ya está registrado
       messenger.showSnackBar(
         SnackBar(content: Text(texts.emailExists)),
       );
@@ -76,6 +81,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // Sección superior con ícono y título
             Expanded(
               flex: 1,
               child: Container(
@@ -106,6 +112,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               ),
             ),
+            // Sección con el formulario de registro
             Expanded(
               flex: 3,
               child: SingleChildScrollView(
@@ -115,6 +122,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 8),
+                      // Campo de nombre completo
                       TextFormField(
                         controller: _nameController,
                         decoration: InputDecoration(
@@ -129,6 +137,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             : null,
                       ),
                       const SizedBox(height: 16),
+                      // Campo de email con validación de formato
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
@@ -148,6 +157,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
+                      // Campo de contraseña con opción de mostrar/ocultar
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
@@ -172,6 +182,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             : null,
                       ),
                       const SizedBox(height: 16),
+                      // Campo de confirmación: valida que coincida con la contraseña
                       TextFormField(
                         controller: _confirmController,
                         obscureText: _obscureConfirm,
@@ -195,6 +206,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           if (v == null || v.isEmpty) {
                             return texts.passwordRequired;
                           }
+                          // Verifica que ambas contraseñas sean iguales
                           if (v != _passwordController.text) {
                             return texts.passwordMustMatch;
                           }
@@ -202,6 +214,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         },
                       ),
                       const SizedBox(height: 28),
+                      // Botón de registro; muestra spinner mientras procesa
                       SizedBox(
                         width: double.infinity,
                         height: 52,
@@ -225,6 +238,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      // Enlace para volver al login si ya tiene cuenta
                       TextButton(
                         onPressed: () => context.go('/'),
                         child: Text(texts.alreadyHaveAccount),
