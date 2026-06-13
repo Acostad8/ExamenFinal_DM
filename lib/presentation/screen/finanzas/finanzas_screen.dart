@@ -411,7 +411,7 @@ class _MovimientoItem extends StatelessWidget {
   }
 }
 
-class _MovimientoDialog extends StatefulWidget {
+class   _MovimientoDialog extends StatefulWidget {
   final MovimientoModel? movimiento;
   final int userId;
 
@@ -604,14 +604,14 @@ class _MovimientoDialogState extends State<_MovimientoDialog> {
               ),
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            OverflowBar(
+              alignment: MainAxisAlignment.end,
+              spacing: 8,
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(texts.cancel),
                 ),
-                const SizedBox(width: 8),
                 FilledButton.icon(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
